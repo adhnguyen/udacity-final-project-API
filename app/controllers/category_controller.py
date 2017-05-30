@@ -1,6 +1,6 @@
 from app.database import session
 
-from app.controllers.auth_controller import login_session
+from app.controllers.auth_controller import auth, login_session
 from app.models.category_model import Category
 from app.models.course_model import Course
 
@@ -13,37 +13,15 @@ from flask import (
 category_ctrl = Blueprint('category', __name__, static_folder='static', template_folder='templates')
 
 
-@category_ctrl.route('', methods=['GET', 'POST'])
-def categories_function():
-    if request.method == 'GET':
-        return getallcategories()
-    if request.method == 'POST':
-        # if 'username' in login_session:
-        return newcategory()
-        # else:
-        #     return error403()
-
-
-@category_ctrl.route('/<int:id>', methods=['PUT', 'DELETE'])
-def categories_function_id(id):
-        if request.method == 'PUT':
-            # if 'username' in login_session:
-            return editcategory(id)
-            # else:
-            #     return error403()
-        if request.method == 'DELETE':
-            # if 'username' in login_session:
-            return deletecategory(id)
-            # else:
-            #     return error403()
-
-
-def getallcategories():
+@category_ctrl.route('/categories', methods=['GET'])
+def categories_function_get():
     categories = session.query(Category).all()
     return jsonify(Categories=[c.serialize for c in categories])
 
 
-def newcategory():
+@category_ctrl.route('/categories', methods=['POST'])
+# @auth.login_required
+def categories_function_post():
     name = request.args.get('name')
     print name
     if name:
@@ -55,7 +33,9 @@ def newcategory():
     return jsonify(Category=category.serialize)
 
 
-def editcategory(id):
+@category_ctrl.route('/categories/<int:id>', methods=['PUT'])
+# @auth.login_required
+def categories_function_id_put(id):
     try:
         category = session.query(Category).filter_by(id=id).one()
     except:
@@ -70,7 +50,9 @@ def editcategory(id):
     return jsonify(Category=category.serialize)
 
 
-def deletecategory(id):
+@category_ctrl.route('/categories/<int:id>', methods=['DELETE'])
+# @auth.login_required
+def categories_function_id_delete(id):
     try:
         category = session.query(Category).filter_by(id=id).one()
     except:

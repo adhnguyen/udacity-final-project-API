@@ -4,21 +4,44 @@ import random
 import requests
 import string
 
+from app.database import session
+from app.models.user_model import User
+
 from flask import (
     Blueprint,
+    g,
+    jsonify,
     make_response,
     redirect,
     render_template,
     request,
-    url_for
+    url_for,
 )
 from flask import session as login_session
+from flask_httpauth import HTTPBasicAuth
+
 from oauth2client.client import FlowExchangeError
 from oauth2client.client import flow_from_clientsecrets
+
+auth = HTTPBasicAuth()
 
 CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())['web']['client_id']
 
 auth_ctrl = Blueprint('auth', __name__, static_folder='static', template_folder='templates')
+
+
+@auth.verify_password
+def verify_password(username_or_token, password):
+    if 'username' in login_session:
+        return True
+    else:
+        return False
+
+
+@auth_ctrl.route('/token')
+def get_auth_token():
+    token = g.user.generate_auth_token()
+    return jsonify({'token': token.decode('ascii')})
 
 
 # Create a state token to prevent request
@@ -33,10 +56,10 @@ def show_login():
 @auth_ctrl.route('/gconnect', methods=['POST'])
 def gconnect():
     # Check if request was sent from the right user
-    if request.args.get('state') != login_session['state']:
-        response = make_response(json.dumps('Invalid state parameter', 401))
-        response.headers['Content-Type'] = 'application/json'
-        return response
+    # if request.args.get('state') != login_session['state']:
+    #     response = make_response(json.dumps('Invalid state parameter', 401))
+    #     response.headers['Content-Type'] = 'application/json'
+    #     return response
 
     code = request.data
     try:
@@ -96,13 +119,18 @@ def gconnect():
     login_session['picture'] = data["picture"]
     login_session['email'] = data["email"]
 
-    output = ''
-    output += '<div> Welcome, <span class="title-bold">' + login_session['username'] + '</span></div>'
-    output += '<img src= "' + login_session['picture'] \
-              + '" alt="..." ' \
-                'style="width: 150px; height:150px; border-radius: 75px; border: 3px solid #000; margin: 15px;">'
-    output += '<div>' + login_session['email'] + '</div>'
-    return output
+    user = session.query(User).filter_by(email=login_session['email']).first()
+    if not user:
+        user = User(username=login_session['name'],
+                    picture=login_session['picture'],
+                    email=login_session['email'])
+        session.add(user)
+        session.commit()
+
+    # Make token
+    token = user.generate_auth_token(600)
+
+    return jsonify({'token': token.decode('ascii')})
 
 
 @auth_ctrl.route('/gdisconnect')

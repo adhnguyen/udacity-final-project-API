@@ -1,6 +1,6 @@
 from app.database import session
 
-from app.controllers.auth_controller import login_session
+from app.controllers.auth_controller import auth, login_session
 from app.models.category_model import Category
 from app.models.course_model import Course
 
@@ -13,25 +13,8 @@ from flask import (
 course_ctrl = Blueprint('course', __name__, static_folder='static', template_folder='templates')
 
 
-@course_ctrl.route('/categories/<int:category_id>/courses', methods=['GET', 'POST'])
-def courses_function(category_id):
-    if request.method == 'GET':
-        return getcoursesbycategoryid(category_id)
-    if request.method == 'POST':
-        return newcourse(category_id)
-
-
-@course_ctrl.route('/categories/<int:category_id>/courses/<int:course_id>', methods=['GET', 'PUT', 'DELETE'])
-def course_function_id(category_id, course_id):
-    if request.method == 'GET':
-        return getcoursebyid(category_id, course_id)
-    if request.method == 'PUT':
-        return editcourse(category_id, course_id)
-    if request.method == 'DELETE':
-        return deletecourse(category_id, course_id)
-
-
-def getcoursesbycategoryid(category_id):
+@course_ctrl.route('/categories/<int:category_id>/courses', methods=['GET'])
+def courses_function_get(category_id):
     try:
         category = session.query(Category).filter_by(id=category_id).one()
     except:
@@ -40,7 +23,9 @@ def getcoursesbycategoryid(category_id):
     return jsonify(Category=category.serialize, Courses=[c.serialize for c in courses])
 
 
-def newcourse(category_id):
+@course_ctrl.route('/categories/<int:category_id>/courses', methods=['POST'])
+# @auth.login_required
+def courses_function_post(category_id):
     try:
         category = session.query(Category).filter_by(id=category_id).one()
     except:
@@ -59,7 +44,8 @@ def newcourse(category_id):
     return jsonify(Course=course.serialize)
 
 
-def getcoursebyid(category_id, course_id):
+@course_ctrl.route('/categories/<int:category_id>/courses/<int:course_id>', methods=['GET'])
+def course_function_id_get(category_id, course_id):
     try:
         course = session.query(Course).filter_by(id=course_id, category_id=category_id).one()
     except:
@@ -67,7 +53,9 @@ def getcoursebyid(category_id, course_id):
     return jsonify(Course=course.serialize)
 
 
-def editcourse(category_id, course_id):
+@course_ctrl.route('/categories/<int:category_id>/courses/<int:course_id>', methods=['PUT'])
+# @auth.login_required
+def course_function_id_put(category_id, course_id):
     try:
         course = session.query(Course).filter_by(id=course_id, category_id=category_id).one()
     except:
@@ -89,7 +77,9 @@ def editcourse(category_id, course_id):
     return jsonify(Course=course.serialize)
 
 
-def deletecourse(category_id, course_id):
+@course_ctrl.route('/categories/<int:category_id>/courses/<int:course_id>', methods=['DELETE'])
+# @auth.login_required
+def course_function_id_put_delete(category_id, course_id):
     try:
         course = session.query(Course).filter_by(id=course_id, category_id=category_id).one()
     except:
