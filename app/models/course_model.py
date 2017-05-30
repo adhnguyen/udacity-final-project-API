@@ -23,5 +23,6 @@ class Course(Base):
             'name': self.name,
             'id': self.id,
             'description': self.description,
-            'img-url': self.img_url
+            'img-url': self.img_url,
+            'category_id': self.category_id,
         }

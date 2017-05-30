@@ -1,9 +1,9 @@
+import httplib2
 import json
 import random
+import requests
 import string
 
-import httplib2
-import requests
 from flask import (
     Blueprint,
     make_response,
@@ -127,7 +127,7 @@ def gdisconnect():
     if result['status'] == '200':
         response = make_response(json.dumps("Successfully disconnected."), 200)
         response.headers['Content-Type'] = 'application/json'
-        return redirect(url_for('category.get_all_categories'))
+        return redirect(url_for('category.categories_function'))
     else:
         response = make_response(json.dumps("Fail to disconnect."), 400)
         response.headers['Content-Type'] = 'application/json'

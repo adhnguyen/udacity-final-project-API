@@ -6,94 +6,84 @@ from app.models.course_model import Course
 
 from flask import (
     Blueprint,
-    flash,
-    redirect,
-    render_template,
+    jsonify,
     request,
-    url_for
 )
 
 category_ctrl = Blueprint('category', __name__, static_folder='static', template_folder='templates')
 
 
-# Show all categories
-@category_ctrl.route('/')
-def get_all_categories():
+@category_ctrl.route('', methods=['GET', 'POST'])
+def categories_function():
+    if request.method == 'GET':
+        return getallcategories()
+    if request.method == 'POST':
+        # if 'username' in login_session:
+        return newcategory()
+        # else:
+        #     return error403()
+
+
+@category_ctrl.route('/<int:id>', methods=['PUT', 'DELETE'])
+def categories_function_id(id):
+        if request.method == 'PUT':
+            # if 'username' in login_session:
+            return editcategory(id)
+            # else:
+            #     return error403()
+        if request.method == 'DELETE':
+            # if 'username' in login_session:
+            return deletecategory(id)
+            # else:
+            #     return error403()
+
+
+def getallcategories():
     categories = session.query(Category).all()
-    if 'username' not in login_session:
-        return render_template('_main.html', view='public_get_all_categories',
-                               login_session=login_session, categories=categories)
+    return jsonify(Categories=[c.serialize for c in categories])
+
+
+def newcategory():
+    name = request.args.get('name')
+    print name
+    if name:
+        category = Category(name=name)
+        session.add(category)
+        session.commit()
     else:
-        print 'login'
-        return render_template('_main.html', view='get_all_categories',
-                               login_session=login_session, categories=categories)
+        return "Category name is required."
+    return jsonify(Category=category.serialize)
 
 
-# Create a new category
-@category_ctrl.route('/new', methods=['GET', 'POST'])
-def new_category():
-    if 'username' not in login_session:
-        return render_template('404.html')
+def editcategory(id):
+    try:
+        category = session.query(Category).filter_by(id=id).one()
+    except:
+        return error404()
+    name = request.args.get('name')
+    if name:
+        category.name = name
+        session.add(category)
+        session.commit()
     else:
-        print login_session['username']
-        if request.method == 'POST':
-            if request.form['name']:
-                category = Category(name=request.form['name'])
-                session.add(category)
-                session.commit()
-                flash('Successfully added the new category.')
-                return redirect(url_for('category.get_all_categories'))
-            else:
-                flash('Category name is required.', 'error')
-                return render_template('_main.html', view='new_category', login_session=login_session)
-        else:
-            return render_template('_main.html', view='new_category', login_session=login_session)
+        return "Category name is required."
+    return jsonify(Category=category.serialize)
 
 
-# Edit a category
-@category_ctrl.route('/<int:category_id>/edit', methods=['GET', 'POST'])
-def edit_category(category_id):
-    if 'username' not in login_session:
-        return render_template('404.html')
-    else:
-        try:
-            category = session.query(Category).filter_by(id=category_id).one()
-        except:
-            return render_template('404.html')
-
-        if request.method == 'POST':
-            if request.form['name']:
-                category.name = request.form['name']
-                session.add(category)
-                session.commit()
-                flash('Successfully edited the category.')
-                return redirect(url_for('category.get_all_categories'))
-            else:
-                flash('Category name is required.', 'error')
-                return render_template('_main.html', view='edit_category',
-                                       login_session=login_session, category=category)
-        return render_template('_main.html', view='edit_category',
-                               login_session=login_session, category=category)
+def deletecategory(id):
+    try:
+        category = session.query(Category).filter_by(id=id).one()
+    except:
+        return error404()
+    session.query(Course).filter_by(category_id=id).delete()
+    session.delete(category)
+    session.commit()
+    return "Category and sub-courses was successfully deleted."
 
 
-# Delete a category
-@category_ctrl.route('/<int:category_id>/delete', methods=['GET', 'POST'])
-def delete_category(category_id):
-    if 'username' not in login_session:
-        return render_template('404.html')
-    else:
-        try:
-            category = session.query(Category).filter_by(id=category_id).one()
-            tmp = category.name
-        except:
-            return render_template('404.html')
+def error403():
+    return "403 FORBIDDEN"
 
-        if request.method == 'POST':
-            session.delete(Course).filter_by(category_id=category_id).all()
-            session.delete(category)
-            session.commit()
-            flash('Successfully deleted the "' + tmp + '" category and all of its sub-courses.')
-            return redirect(url_for('category.get_all_categories'))
-        else:
-            return render_template('_main.html', view='delete_category',
-                                   login_session=login_session, category=category)
+
+def error404():
+    return "404 FILE NOT FOUND"

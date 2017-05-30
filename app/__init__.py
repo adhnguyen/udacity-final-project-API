@@ -14,4 +14,4 @@ app.register_blueprint(blueprint=course_controller.course_ctrl, url_prefix='')
 
 @app.route('/')
 def homepage():
-    return redirect(url_for('category.get_all_categories'))
+    return redirect(url_for('category.categories_function'))
