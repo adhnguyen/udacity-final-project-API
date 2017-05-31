@@ -2,8 +2,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database import Base
-from app.models.category_model import Category
-from app.models.course_model import Course
+from app.models.category import Category
+from app.models.course import Course
 
 engine = create_engine('sqlite:///cs_training.db')
 # Bind the engine to the metadata of the Base class so that the

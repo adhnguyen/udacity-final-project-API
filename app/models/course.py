@@ -1,6 +1,6 @@
 from app.database import Base
 
-from category_model import Category
+from category import Category
 
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
