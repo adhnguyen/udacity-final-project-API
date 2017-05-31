@@ -1,6 +1,6 @@
-from app.database import session
-
+from app.controllers.auth import auth
 from app.controllers.response_message import error_message, info_message
+from app.database import session
 from app.models.category import Category
 from app.models.course import Course
 
@@ -24,7 +24,7 @@ def get_courses_by_category_id(category_id):
 
 
 @page.route('/categories/<int:category_id>/courses', methods=['POST'])
-# @auth.login_required
+@auth.login_required
 def add_course(category_id):
     try:
         category = session.query(Category).filter_by(id=category_id).one()
@@ -54,14 +54,13 @@ def get_course_by_id(category_id, course_id):
 
 
 @page.route('/categories/<int:category_id>/courses/<int:course_id>', methods=['PUT'])
-# @auth.login_required
+@auth.login_required
 def edit_course(category_id, course_id):
     try:
         course = session.query(Course).filter_by(id=course_id, category_id=category_id).one()
     except:
         return error_message(404, "Cannot update: Course not found.")
     if not not request.form['name']:  # if 'name' is a non-empty value then update else keep current value
-        print "get here!"
         course.name = request.form['name']
 
     course.description = request.form['description']
@@ -74,7 +73,7 @@ def edit_course(category_id, course_id):
 
 
 @page.route('/categories/<int:category_id>/courses/<int:course_id>', methods=['DELETE'])
-# @auth.login_required
+@auth.login_required
 def delete_course(category_id, course_id):
     try:
         course = session.query(Course).filter_by(id=course_id, category_id=category_id).one()

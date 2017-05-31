@@ -1,6 +1,6 @@
-from app.database import session
-
+from app.controllers.auth import auth
 from app.controllers.response_message import error_message, info_message
+from app.database import session
 from app.models.category import Category
 from app.models.course import Course
 
@@ -21,7 +21,7 @@ def get_all_categories():
 
 
 @page.route('/categories', methods=['POST'])
-# @auth.login_required
+@auth.login_required
 def add_category():
     name = request.form['name']
     if name:
@@ -34,7 +34,7 @@ def add_category():
 
 
 @page.route('/categories/<int:category_id>', methods=['PUT'])
-# @auth.login_required
+@auth.login_required
 def edit_category(category_id):
     try:
         category = session.query(Category).filter_by(id=category_id).one()
@@ -51,7 +51,7 @@ def edit_category(category_id):
 
 
 @page.route('/categories/<int:category_id>', methods=['DELETE'])
-# @auth.login_required
+@auth.login_required
 def delete_category(category_id):
     try:
         category = session.query(Category).filter_by(id=category_id).one()

@@ -88,7 +88,6 @@ def gconnect():
     picture = data["picture"]
     email = data["email"]
 
-    print "GET HERE!!!"
     user = session.query(User).filter_by(email=email).first()
     if not user:
         user = User(username=name, picture=picture, email=email)

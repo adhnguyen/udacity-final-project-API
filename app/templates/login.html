@@ -16,7 +16,6 @@
         </script>
     </head>
     <body>
-        <div id="token"></div>
         <button id="signinButton">Sign in</button>
         <script>
           $('#signinButton').click(function() {
@@ -37,10 +36,10 @@
                     type: 'POST',
                     url: '/auth/gconnect',
                     processData: false,
-                    contentType: 'application/octet-stream; charset=utf-8',
+                    contentType: 'application/json; charset=utf-8',
                     data: authResult['code'],
                     success: function(result) {
-                        $('#token').html(result)
+                        console.log(JSON.stringify(result))
                     }
                 })
             }
