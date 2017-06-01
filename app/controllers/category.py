@@ -17,20 +17,20 @@ page = Blueprint('category', __name__, static_folder='static', template_folder='
 @page.route('/categories', methods=['GET'])
 def get_all_categories():
     categories = session.query(Category).all()
-    return jsonify(Categories=[c.serialize for c in categories])
+    return jsonify(Categories=[c.serialize for c in categories]), 200
 
 
 @page.route('/categories', methods=['POST'])
 @auth.login_required
 def add_category():
-    name = request.form['name']
+    name = request.form.get('name')
     if name:
         category = Category(name=name)
         session.add(category)
         session.commit()
     else:
-        return error_message(1000, "Course name is required.")
-    return jsonify(Category=category.serialize)
+        return error_message(400, "Course name is required.")
+    return jsonify(Category=category.serialize), 200
 
 
 @page.route('/categories/<int:category_id>', methods=['PUT'])
@@ -40,14 +40,14 @@ def edit_category(category_id):
         category = session.query(Category).filter_by(id=category_id).one()
     except:
         return error_message(404, "Cannot update: Category not found.")
-    name = request.form['name']
-    if not not name:
+    name = request.form.get('name')
+    if name:
         category.name = name
         session.add(category)
         session.commit()
     else:
-        return error_message(1000, "Course name is required.")
-    return jsonify(Category=category.serialize)
+        return error_message(400, "Course name is required.")
+    return jsonify(Category=category.serialize), 200
 
 
 @page.route('/categories/<int:category_id>', methods=['DELETE'])

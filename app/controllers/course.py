@@ -20,7 +20,7 @@ def get_courses_by_category_id(category_id):
     except:
         return error_message(404, "Category not found.")
     courses = session.query(Course).filter_by(category_id=category_id).all()
-    return jsonify(Category=category.serialize, Courses=[c.serialize for c in courses])
+    return jsonify(Category=category.serialize, Courses=[c.serialize for c in courses]), 200
 
 
 @page.route('/categories/<int:category_id>/courses', methods=['POST'])
@@ -30,18 +30,18 @@ def add_course(category_id):
         category = session.query(Category).filter_by(id=category_id).one()
     except:
         return error_message(404, "Cannot add new course to this category: Category not found.")
-    name = request.form['name']
+    name = request.form.get('name')
     if name:
         course = Course(name=name,
-                        description=request.form['description'],
-                        img_url=request.form['img-url'],
-                        intro_video_url=request.form['intro-video-url'],
+                        description=request.form.get('description'),
+                        img_url=request.form.get('img-url'),
+                        intro_video_url=request.form.get('intro-video-url'),
                         category_id=category.id)
         session.add(course)
         session.commit()
     else:
-        return error_message(1000, "Course name is required.")
-    return jsonify(Course=course.serialize)
+        return error_message(400, "Course name is required.")
+    return jsonify(Course=course.serialize), 200
 
 
 @page.route('/categories/<int:category_id>/courses/<int:course_id>', methods=['GET'])
@@ -50,7 +50,7 @@ def get_course_by_id(category_id, course_id):
         course = session.query(Course).filter_by(id=course_id, category_id=category_id).one()
     except:
         return error_message(404, "Course not found.")
-    return jsonify(Course=course.serialize)
+    return jsonify(Course=course.serialize), 200
 
 
 @page.route('/categories/<int:category_id>/courses/<int:course_id>', methods=['PUT'])
@@ -60,16 +60,16 @@ def edit_course(category_id, course_id):
         course = session.query(Course).filter_by(id=course_id, category_id=category_id).one()
     except:
         return error_message(404, "Cannot update: Course not found.")
-    if not not request.form['name']:  # if 'name' is a non-empty value then update else keep current value
-        course.name = request.form['name']
+    if request.form.get('name'):  # if 'name' is a non-empty value then update else keep current value
+        course.name = request.form('name')
 
-    course.description = request.form['description']
-    course.img_url = request.form['img-url']
-    course.intro_video_url = request.form['intro-video-url']
+    course.description = request.form.get('description')
+    course.img_url = request.form.get('img-url')
+    course.intro_video_url = request.form.get('intro-video-url')
 
     session.add(course)
     session.commit()
-    return jsonify(Course=course.serialize)
+    return jsonify(Course=course.serialize), 200
 
 
 @page.route('/categories/<int:category_id>/courses/<int:course_id>', methods=['DELETE'])

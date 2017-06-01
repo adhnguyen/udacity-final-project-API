@@ -39,7 +39,7 @@ def verify_token(token):
 @page.route('/token')
 def get_auth_token():
     token = g.user.generate_auth_token()
-    return jsonify({'token': token.decode('ascii')})
+    return jsonify({'token': token.decode('ascii')}), 200
 
 
 @page.route('/login')
@@ -97,4 +97,4 @@ def gconnect():
     # Make token
     token = user.generate_auth_token(600)
 
-    return jsonify({'token': token.decode('ascii')})
+    return jsonify({'token': token.decode('ascii')}), 200
