@@ -2,14 +2,13 @@ import httplib2
 import json
 import requests
 
-from app.libraries.response_message import error_message
+from app.libraries.response_message import error_message, data_message
 from app.database import session
 from app.models.user import User
 
 from flask import (
     Blueprint,
     g,
-    jsonify,
     request,
 )
 from flask_httpauth import HTTPTokenAuth
@@ -44,7 +43,7 @@ def gconnect():
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
-        return error_message(401, 'Failed to upgrade the authorization code.')
+        return error_message(401, "Failed to upgrade the authorization code.")
 
     # Check if the access token is valid
     access_token = credentials.access_token
@@ -85,4 +84,4 @@ def gconnect():
     # Make token
     token = user.generate_auth_token(600)
 
-    return jsonify({'token': token.decode('ascii')}), 200
+    return data_message(200, {'token': token.decode('ascii')}, "Successfully generated token."), 200

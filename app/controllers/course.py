@@ -1,12 +1,11 @@
 from app.controllers.auth import auth
-from app.libraries.response_message import error_message, info_message
+from app.libraries.response_message import error_message, data_message
 from app.database import session
 from app.models.category import Category
 from app.models.course import Course
 
 from flask import (
     Blueprint,
-    jsonify,
     request,
 )
 
@@ -20,7 +19,8 @@ def get_courses_by_category_id(category_id):
     except:
         return error_message(404, "Category not found.")
     courses = session.query(Course).filter_by(category_id=category_id).all()
-    return jsonify(Category=category.serialize, Courses=[c.serialize for c in courses]), 200
+    return data_message(200, {"Category": category.serialize, "Courses": [c.serialize for c in courses]},
+                        "Successfully returned all courses by given category.")
 
 
 @page.route('/categories/<int:category_id>/courses', methods=['POST'])
@@ -41,7 +41,7 @@ def add_course(category_id):
         session.commit()
     else:
         return error_message(400, "Course name is required.")
-    return jsonify(Course=course.serialize), 200
+    return data_message(200, {"Course": course.serialize}, "Successfully added a course.")
 
 
 @page.route('/categories/<int:category_id>/courses/<int:course_id>', methods=['GET'])
@@ -50,7 +50,8 @@ def get_course_by_id(category_id, course_id):
         course = session.query(Course).filter_by(id=course_id, category_id=category_id).one()
     except:
         return error_message(404, "Course not found.")
-    return jsonify(Course=course.serialize), 200
+    return data_message(200, {"Course": course.serialize},
+                        "Successfully returned the selected course.")
 
 
 @page.route('/categories/<int:category_id>/courses/<int:course_id>', methods=['PUT'])
@@ -69,7 +70,7 @@ def edit_course(category_id, course_id):
 
     session.add(course)
     session.commit()
-    return jsonify(Course=course.serialize), 200
+    return data_message(200, {"Course": course.serialize}, "Successfully updated the course.")
 
 
 @page.route('/categories/<int:category_id>/courses/<int:course_id>', methods=['DELETE'])
@@ -81,4 +82,4 @@ def delete_course(category_id, course_id):
         return error_message(404, "Cannot delete: Course not found.")
     session.delete(course)
     session.commit()
-    return info_message(200, "Course was successfully deleted.")
+    return data_message(200, None, "Course was successfully deleted.")

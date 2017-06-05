@@ -1,12 +1,11 @@
 from app.controllers.auth import auth
-from app.libraries.response_message import error_message, info_message
+from app.libraries.response_message import error_message, data_message
 from app.database import session
 from app.models.category import Category
 from app.models.course import Course
 
 from flask import (
     Blueprint,
-    jsonify,
     request,
 )
 
@@ -17,7 +16,8 @@ page = Blueprint('category', __name__, static_folder='static', template_folder='
 @page.route('/categories', methods=['GET'])
 def get_all_categories():
     categories = session.query(Category).all()
-    return jsonify(Categories=[c.serialize for c in categories]), 200
+    return data_message(200, {"Categories": [c.serialize for c in categories]},
+                        "Successfully returned all categories.")
 
 
 @page.route('/categories', methods=['POST'])
@@ -30,7 +30,7 @@ def add_category():
         session.commit()
     else:
         return error_message(400, "Course name is required.")
-    return jsonify(Category=category.serialize), 200
+    return data_message(200, {"Category": category.serialize}, "Successfully added a category.")
 
 
 @page.route('/categories/<int:category_id>', methods=['PUT'])
@@ -47,7 +47,7 @@ def edit_category(category_id):
         session.commit()
     else:
         return error_message(400, "Course name is required.")
-    return jsonify(Category=category.serialize), 200
+    return data_message(200, {"Category": category.serialize}, "Successfully updated the category.")
 
 
 @page.route('/categories/<int:category_id>', methods=['DELETE'])
@@ -60,4 +60,4 @@ def delete_category(category_id):
     session.query(Course).filter_by(category_id=category_id).delete()
     session.delete(category)
     session.commit()
-    return info_message(200, "Category and sub-courses was successfully deleted.")
+    return data_message(200, None, "Category and sub-courses was successfully deleted.")
