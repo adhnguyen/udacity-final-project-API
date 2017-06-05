@@ -1,3 +1,4 @@
 *.pyc
 .idea
 cs_training.db
+login.html

@@ -1,5 +1,5 @@
 from app.controllers.auth import auth
-from app.controllers.response_message import error_message, info_message
+from app.libraries.response_message import error_message, info_message
 from app.database import session
 from app.models.category import Category
 from app.models.course import Course

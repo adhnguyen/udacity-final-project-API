@@ -2,7 +2,7 @@ import httplib2
 import json
 import requests
 
-from app.controllers.response_message import error_message, info_message
+from app.libraries.response_message import error_message
 from app.database import session
 from app.models.user import User
 
@@ -10,7 +10,6 @@ from flask import (
     Blueprint,
     g,
     jsonify,
-    render_template,
     request,
 )
 from flask_httpauth import HTTPTokenAuth
@@ -34,17 +33,6 @@ def verify_token(token):
         return False
     g.user = user
     return True
-
-
-@page.route('/token')
-def get_auth_token():
-    token = g.user.generate_auth_token()
-    return jsonify({'token': token.decode('ascii')}), 200
-
-
-@page.route('/login')
-def show_login():
-    return render_template('login.html')
 
 
 @page.route('/gconnect', methods=['POST'])
